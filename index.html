@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS:GO 2D Aim Trainer</title>
+    <title>CS 2D - Vs Bots</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="ui-container">
-        <h1>Aim Trainer - Operação JS</h1>
-        <div class="stats">
-            <p>Score (Kills): <span id="score" class="highlight">0</span></p>
-            <p>Tempo Restante: <span id="time" class="highlight">30</span>s</p>
+    <div id="ui">
+        <h1>Modo Sobrevivência (Vs Bots)</h1>
+        <div class="hud">
+            <span id="healthUi">Vida: 100</span> | 
+            <span id="weaponUi">Arma: Pistola (1)</span> | 
+            <span id="scoreUi">Kills: 0</span>
         </div>
-        <button id="startBtn">INICIAR TREINO</button>
+        <p><b>WASD</b>: Andar | <b>Mouse</b>: Mirar e Atirar | <b>1, 2, 3</b>: Trocar Arma</p>
     </div>
     
-    <div id="gameArea"></div>
+    <canvas id="gameCanvas" width="800" height="500"></canvas>
 
     <script src="script.js"></script>
 </body>
