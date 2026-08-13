@@ -3,21 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS 2D - Vs Bots</title>
+    <title>CS:GO - Web 3D</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="ui">
-        <h1>Modo Sobrevivência (Vs Bots)</h1>
-        <div class="hud">
-            <span id="healthUi">Vida: 100</span> | 
-            <span id="weaponUi">Arma: Pistola (1)</span> | 
-            <span id="scoreUi">Kills: 0</span>
-        </div>
-        <p><b>WASD</b>: Andar | <b>Mouse</b>: Mirar e Atirar | <b>1, 2, 3</b>: Trocar Arma</p>
+        <h1>Operação CSS 3D</h1>
+        <p><b>WASD</b>: Andar | <b>Mouse</b>: Mirar | <b>Clique</b>: Atirar</p>
+        
+        <button id="startBtn">JOGAR (Travar Mouse)</button> 
+        
+        <div id="score">Kills: 0</div>
     </div>
+
+    <div id="crosshair"></div>
     
-    <canvas id="gameCanvas" width="800" height="500"></canvas>
+    <div id="gun"></div>
+
+    <div id="camera">
+        <div id="world">
+            <div class="floor"></div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
