@@ -6,24 +6,24 @@ const gun = document.getElementById('gun');
 // Variáveis do Jogador
 let px = 0, pz = 0; 
 let rot = 0;        
-const speed = 10;   
+const speed = 15; // Velocidade ajustada  
 let kills = 0;
 const keys = {};
 
-// Controles do Teclado
+// Controles
 document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-// Iniciar e Travar o Mouse (Pointer Lock)
+// Travar Mouse
 startBtn.addEventListener('click', () => {
     document.body.requestPointerLock();
     startBtn.style.display = 'none';
 });
 
-// Movimento do Mouse (MOUSE CORRIGIDO AQUI!)
+// Girar Câmera
 document.addEventListener('mousemove', (e) => {
     if (document.pointerLockElement === document.body) {
-        rot += e.movementX * 0.15; // Troquei de - para + para desinverter
+        rot += e.movementX * 0.15;
     }
 });
 
@@ -31,56 +31,55 @@ document.addEventListener('mousemove', (e) => {
 document.addEventListener('mousedown', () => {
     if (document.pointerLockElement !== document.body) return;
 
-    gun.style.transform = "translateY(40px) rotateX(10deg)";
-    setTimeout(() => gun.style.transform = "translateY(0) rotateX(0)", 100);
+    // Recuo (Recoil) mais realista para trás e para cima
+    gun.style.transform = "translate(20px, 30px) rotate(-5deg)";
+    setTimeout(() => gun.style.transform = "translate(0, 0) rotate(0)", 100);
 
     const target = document.elementFromPoint(window.innerWidth / 2, window.innerHeight / 2);
 
     if (target && target.classList.contains('bot')) {
         target.dataset.health -= 50;
         
-        target.style.backgroundColor = 'white';
-        setTimeout(() => { if (target) target.style.backgroundColor = '#e74c3c'; }, 100);
+        target.style.filter = 'brightness(200%)';
+        setTimeout(() => { if (target) target.style.filter = 'none'; }, 100);
 
         if (target.dataset.health <= 0) {
             target.remove();
             kills++;
             scoreDisplay.innerText = `Kills: ${kills}`;
-            spawnBot(); // Nasce outro
+            spawnBot(); 
         }
     }
 });
 
-// Criar o Cenário (Paredes)
+// Mapa de Paredes
 function buildMap() {
-    // Lista de paredes: X, Z, e rotação Y
     const mapLayout = [
-        { x: 500, z: -500, ry: 0 },
-        { x: -500, z: -500, ry: 0 },
-        { x: 0, z: -800, ry: 90 },
-        { x: 800, z: 0, ry: 90 },
-        { x: -800, z: 0, ry: 90 },
-        { x: 300, z: 600, ry: 45 },
-        { x: -300, z: 600, ry: -45 }
+        { x: 500, z: -800, ry: 0 },
+        { x: -500, z: -800, ry: 0 },
+        { x: 0, z: -1200, ry: 90 },
+        { x: 800, z: -400, ry: 90 },
+        { x: -800, z: -400, ry: 90 },
+        { x: 400, z: 600, ry: 45 },
+        { x: -400, z: 600, ry: -45 }
     ];
 
-    mapLayout.forEach(wallData => {
+    mapLayout.forEach(data => {
         let w = document.createElement('div');
         w.className = 'wall';
-        // A altura (Y) é 0 para alinhar com o chão (150px por causa da perspectiva)
-        w.style.transform = `translate3d(${wallData.x}px, 0px, ${wallData.z}px) rotateY(${wallData.ry}deg)`;
+        // A altura (Y) -50 puxa a parede do chão pra cima
+        w.style.transform = `translate3d(${data.x}px, -50px, ${data.z}px) rotateY(${data.ry}deg)`;
         world.appendChild(w);
     });
 }
 
-// Sistema de Bots
 function spawnBot() {
     let bot = document.createElement('div');
     bot.className = 'bot';
     
-    // Nascem mais longe de você
-    let bx = (Math.random() - 0.5) * 4000;
-    let bz = (Math.random() - 0.5) * 4000;
+    // Nascem em um raio aleatório
+    let bx = (Math.random() - 0.5) * 3000;
+    let bz = (Math.random() - 0.5) * 3000;
     
     bot.dataset.x = bx;
     bot.dataset.z = bz;
@@ -89,47 +88,61 @@ function spawnBot() {
     world.appendChild(bot);
 }
 
-// Loop Principal
+// Loop Principal Corrigido
 function gameLoop() {
-    // Cálculo para andar na direção certa
-    const s = Math.sin(rot * Math.PI / 180);
-    const c = Math.cos(rot * Math.PI / 180);
+    // Matemática trigonométrica precisa para FPS
+    const rad = rot * Math.PI / 180;
+    const sin = Math.sin(rad);
+    const cos = Math.cos(rad);
 
-    if (keys['w']) { px -= s * speed; pz -= c * speed; }
-    if (keys['s']) { px += s * speed; pz += c * speed; }
-    if (keys['a']) { px -= c * speed; pz += s * speed; }
-    if (keys['d']) { px += c * speed; pz -= s * speed; }
+    let moveX = 0;
+    let moveZ = 0;
+
+    // Detecta intenção de movimento
+    if (keys['w']) { moveX -= sin; moveZ -= cos; }
+    if (keys['s']) { moveX += sin; moveZ += cos; }
+    if (keys['a']) { moveX -= cos; moveZ += sin; }
+    if (keys['d']) { moveX += cos; moveZ -= sin; }
+
+    // Normaliza o vetor para não andar mais rápido na diagonal
+    if (moveX !== 0 || moveZ !== 0) {
+        const length = Math.sqrt(moveX * moveX + moveZ * moveZ);
+        px += (moveX / length) * speed;
+        pz += (moveZ / length) * speed;
+    }
+
+    // Limita para não sair do mapa infinitamente
+    if (px > 4500) px = 4500;
+    if (px < -4500) px = -4500;
+    if (pz > 4500) pz = 4500;
+    if (pz < -4500) pz = -4500;
 
     // Atualiza a Câmera
-    world.style.transform = `translateZ(600px) rotateY(${rot}deg) translate3d(${-px}px, 0, ${-pz}px)`;
+    world.style.transform = `translateZ(700px) rotateY(${rot}deg) translate3d(${-px}px, 0, ${-pz}px)`;
 
-    // Lógica dos Bots (IA)
+    // IA dos Bots
     document.querySelectorAll('.bot').forEach(b => {
         let bx = parseFloat(b.dataset.x);
         let bz = parseFloat(b.dataset.z);
         
-        // Descobre a distância e a direção até o jogador
         let dx = px - bx;
         let dz = pz - bz;
         let dist = Math.sqrt(dx * dx + dz * dz);
         
-        // Se estiver longe, o bot anda na sua direção
-        if (dist > 150) {
-            bx += (dx / dist) * 2; // O "2" é a velocidade do bot
-            bz += (dz / dist) * 2;
+        // Bots te seguem e encostam no chão (Y = 10)
+        if (dist > 200) {
+            bx += (dx / dist) * 2.5; 
+            bz += (dz / dist) * 2.5;
         }
 
         b.dataset.x = bx;
         b.dataset.z = bz;
-
-        // Atualiza no CSS (Eles sempre olham para você usando a rotação invertida da câmera)
-        b.style.transform = `translate3d(${bx}px, 70px, ${bz}px) rotateY(${-rot}deg)`;
+        b.style.transform = `translate3d(${bx}px, 10px, ${bz}px) rotateY(${-rot}deg)`;
     });
 
     requestAnimationFrame(gameLoop);
 }
 
-// Inicializa o jogo
 buildMap();
 for (let i = 0; i < 6; i++) spawnBot();
 gameLoop();
