@@ -86,4 +86,20 @@ button {
     transform-style: preserve-3d;
 }
 
-/* Chão do mapa (Estilo Dust2
+/* Chão do mapa (Estilo Dust2) */
+.floor {
+    position: absolute;
+    width: 5000px; height: 5000px;
+    background-color: #d4c3a3;
+    /* Deita o chão no eixo X e empurra para baixo no eixo Y */
+    transform: translate(-50%, -50%) rotateX(90deg) translateZ(150px);
+}
+
+/* Inimigos */
+.bot {
+    position: absolute;
+    width: 100px; height: 180px;
+    background-color: #e74c3c;
+    border: 4px solid #c0392b;
+    pointer-events: auto; /* Precisa receber o tiro */
+}
